@@ -1,0 +1,64 @@
+# Server Configuration
+NODE_ENV=development
+PORT=5000
+API_VERSION=v1
+
+# Database
+MONGODB_URI=mongodb://localhost:27017/pikkar
+MONGODB_URI_TEST=mongodb://localhost:27017/pikkar_test
+
+# JWT Secret Keys
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_REFRESH_SECRET=your-refresh-secret-key-change-this
+JWT_EXPIRES_IN=24h
+JWT_REFRESH_EXPIRES_IN=7d
+
+# OTP Configuration
+OTP_EXPIRY_MINUTES=10
+
+# Twilio (SMS)
+TWILIO_ACCOUNT_SID=your-twilio-account-sid
+TWILIO_AUTH_TOKEN=your-twilio-auth-token
+TWILIO_PHONE_NUMBER=+1234567890
+
+# Email (Nodemailer)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-email-password
+
+# Payment Gateway (Stripe)
+STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
+STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
+STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
+
+# Google Maps API
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+
+# Frontend URL (for CORS)
+FRONTEND_URL=http://localhost:3000
+DRIVER_APP_URL=http://localhost:3001
+
+# Firebase Admin (for Firebase login on backend)
+# Recommended: create a Firebase service account and paste values here.
+FIREBASE_PROJECT_ID=your-firebase-project-id
+FIREBASE_CLIENT_EMAIL=your-service-account-client-email
+# IMPORTANT: keep quotes and use \\n for newlines
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n"
+
+# File Upload
+MAX_FILE_SIZE=5242880
+UPLOAD_PATH=./uploads
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# Base Fare Configuration (in cents/paise)
+BASE_FARE=5000
+PER_KM_RATE=1000
+PER_MINUTE_RATE=200
+MINIMUM_FARE=3000
+BOOKING_FEE=500
+SURGE_MULTIPLIER=1.0
+

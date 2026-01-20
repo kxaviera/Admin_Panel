@@ -1,0 +1,439 @@
+{
+  "info": {
+    "name": "Pikkar API",
+    "description": "Complete API collection for Pikkar ride-sharing application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"1234567890\",\n  \"password\": \"password123\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drivers",
+      "item": [
+        {
+          "name": "Register as Driver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"licenseNumber\": \"DL1234567890\",\n  \"licenseExpiry\": \"2026-12-31\",\n  \"vehicleType\": \"sedan\",\n  \"vehicleModel\": \"Camry\",\n  \"vehicleMake\": \"Toyota\",\n  \"vehicleYear\": 2022,\n  \"vehicleColor\": \"Black\",\n  \"vehicleNumber\": \"KA01AB1234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drivers/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["drivers", "register"]
+            }
+          }
+        },
+        {
+          "name": "Get Nearby Drivers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/drivers/nearby?longitude=77.5946&latitude=12.9716&maxDistance=5000&vehicleType=sedan",
+              "host": ["{{baseUrl}}"],
+              "path": ["drivers", "nearby"],
+              "query": [
+                {
+                  "key": "longitude",
+                  "value": "77.5946"
+                },
+                {
+                  "key": "latitude",
+                  "value": "12.9716"
+                },
+                {
+                  "key": "maxDistance",
+                  "value": "5000"
+                },
+                {
+                  "key": "vehicleType",
+                  "value": "sedan"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Driver Location",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"longitude\": 77.5946,\n  \"latitude\": 12.9716\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drivers/location",
+              "host": ["{{baseUrl}}"],
+              "path": ["drivers", "location"]
+            }
+          }
+        },
+        {
+          "name": "Toggle Online Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/drivers/toggle-online",
+              "host": ["{{baseUrl}}"],
+              "path": ["drivers", "toggle-online"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rides",
+      "item": [
+        {
+          "name": "Request Ride",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickupLocation\": {\n    \"coordinates\": [77.5946, 12.9716],\n    \"address\": \"123 Main St, Bangalore, India\"\n  },\n  \"dropoffLocation\": {\n    \"coordinates\": [77.6101, 12.9800],\n    \"address\": \"456 Park Ave, Bangalore, India\"\n  },\n  \"vehicleType\": \"sedan\",\n  \"paymentMethod\": \"card\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rides",
+              "host": ["{{baseUrl}}"],
+              "path": ["rides"]
+            }
+          }
+        },
+        {
+          "name": "Get All Rides",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rides?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["rides"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Accept Ride (Driver)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rides/:rideId/accept",
+              "host": ["{{baseUrl}}"],
+              "path": ["rides", ":rideId", "accept"],
+              "variable": [
+                {
+                  "key": "rideId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Ride Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"started\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rides/:rideId/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["rides", ":rideId", "status"],
+              "variable": [
+                {
+                  "key": "rideId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Ride",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Changed plans\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rides/:rideId/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["rides", ":rideId", "cancel"],
+              "variable": [
+                {
+                  "key": "rideId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Rate Ride",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"review\": \"Great driver, smooth ride!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rides/:rideId/rate",
+              "host": ["{{baseUrl}}"],
+              "path": ["rides", ":rideId", "rate"],
+              "variable": [
+                {
+                  "key": "rideId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get User Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Driver Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/drivers/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["drivers", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Ride Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rides/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["rides", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,7 @@
+dist/
+admin-dashboard/.next/
+admin-dashboard/out/
+admin-dashboard/node_modules/
+node_modules/
+.npm-cache/
+coverage/
