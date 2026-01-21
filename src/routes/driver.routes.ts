@@ -19,12 +19,32 @@ import { protect, restrictTo } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validation';
 import { checkSubscription } from '../middleware/subscriptionCheck';
 import Service from '../models/Service';
+import { upload } from '../services/upload.service';
 
 const router = Router();
 
 // Public routes (used by rider app before/without auth)
 router.get('/nearby', getNearbyDrivers);
-router.post('/apply', applyToBeDriver);
+// Apply to be driver with file uploads support
+// Middleware to set folder for uploads
+router.post(
+  '/apply',
+  (req, res, next) => {
+    // Set folder to 'documents' for driver application uploads
+    req.body.folder = 'documents';
+    next();
+  },
+  upload.fields([
+    { name: 'rcFront', maxCount: 1 },
+    { name: 'rcBack', maxCount: 1 },
+    { name: 'aadharFront', maxCount: 1 },
+    { name: 'aadharBack', maxCount: 1 },
+    { name: 'dlFront', maxCount: 1 },
+    { name: 'dlBack', maxCount: 1 },
+    { name: 'profilePicture', maxCount: 1 },
+  ]),
+  applyToBeDriver
+);
 
 // All other routes require authentication
 router.use(protect);

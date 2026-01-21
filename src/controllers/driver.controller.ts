@@ -7,6 +7,7 @@ import { AppError } from '../utils/AppError';
 import { asyncHandler } from '../utils/asyncHandler';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { SubscriptionService } from '../services/subscription.service';
+import { UploadService } from '../services/upload.service';
 
 // @desc    Register as driver
 // @route   POST /api/v1/drivers/register
@@ -349,6 +350,9 @@ export const applyToBeDriver = asyncHandler(async (req: AuthRequest, res: Respon
     vehicleModel,
     vehicleColor,
     serviceCategory,
+    aadharNumber,
+    dlNumber,
+    address,
   } = req.body as any;
 
   const fullName = (name || '').toString().trim();
@@ -356,17 +360,42 @@ export const applyToBeDriver = asyncHandler(async (req: AuthRequest, res: Respon
   const resolvedFirst = (firstName || parts[0] || '').toString().trim() || 'Driver';
   const resolvedLast = (lastName || parts.slice(1).join(' ') || '').toString().trim() || 'Applicant';
 
-  if (!email || !phone) throw new AppError('email and phone are required', 400);
+  // Handle file uploads
+  const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+
+  // Email and phone are optional for RC upload, but required for profile info submission
+  // If only files are uploaded (RC documents), email/phone can be empty
+  // They will be provided when profile info is submitted
+  const hasFiles = files && (
+    (files.rcFront && files.rcFront[0]) ||
+    (files.rcBack && files.rcBack[0]) ||
+    (files.aadharFront && files.aadharFront[0]) ||
+    (files.aadharBack && files.aadharBack[0]) ||
+    (files.dlFront && files.dlFront[0]) ||
+    (files.dlBack && files.dlBack[0]) ||
+    (files.profilePicture && files.profilePicture[0])
+  );
+
+  // If email/phone are provided, validate them
+  // If only files are uploaded without email/phone, allow it (RC upload only)
+  if (email || phone) {
+    if (!email || !phone) {
+      throw new AppError('Both email and phone are required when provided', 400);
+    }
+  } else if (!hasFiles) {
+    // If no files and no email/phone, require at least email/phone
+    throw new AppError('email and phone are required', 400);
+  }
 
   const normalizedCategory = ['ride', 'parcel', 'both'].includes(String(serviceCategory || '').toLowerCase())
     ? String(serviceCategory).toLowerCase()
     : 'ride';
-
-  const application = await DriverApplication.create({
+  
+  const applicationData: any = {
     firstName: resolvedFirst,
     lastName: resolvedLast,
-    email: String(email).trim().toLowerCase(),
-    phone: String(phone).trim(),
+    ...(email && { email: String(email).trim().toLowerCase() }),
+    ...(phone && { phone: String(phone).trim() }),
     serviceCategory: normalizedCategory,
     status: 'pending',
     vehicleDetails: vehicleType || vehicleNumber || vehicleModel || vehicleColor
@@ -379,8 +408,86 @@ export const applyToBeDriver = asyncHandler(async (req: AuthRequest, res: Respon
           color: vehicleColor || '',
         }
       : undefined,
-    notes: licenseNumber ? `licenseNumber:${licenseNumber}` : undefined,
-  } as any);
+    notes: [
+      licenseNumber ? `licenseNumber:${licenseNumber}` : null,
+      aadharNumber && aadharNumber.trim() ? `aadharNumber:${aadharNumber.trim()}` : null,
+      dlNumber && dlNumber.trim() ? `dlNumber:${dlNumber.trim()}` : null,
+      address && address.trim() ? `address:${address.trim()}` : null,
+    ].filter(Boolean).join('; ') || undefined,
+    documents: {
+      license: {
+        verified: false,
+      },
+      aadhar: {
+        verified: false,
+      },
+      photo: {
+        verified: false,
+      },
+      backgroundCheck: {
+        verified: false,
+      },
+    },
+  };
+
+  // Process uploaded files
+  if (files) {
+    // Profile picture
+    if (files.profilePicture && files.profilePicture[0]) {
+      const filename = files.profilePicture[0].filename;
+      applicationData.documents.photo.url = UploadService.getFileUrl(
+        `documents/${filename}`
+      );
+    }
+
+    // Driving License (DL) - front and back
+    const dlDocs: string[] = [];
+    if (files.dlFront && files.dlFront[0]) {
+      const filename = files.dlFront[0].filename;
+      const dlFrontUrl = UploadService.getFileUrl(`documents/${filename}`);
+      applicationData.documents.license.url = dlFrontUrl;
+      dlDocs.push(`dlFront:${dlFrontUrl}`);
+    }
+    if (files.dlBack && files.dlBack[0]) {
+      const filename = files.dlBack[0].filename;
+      dlDocs.push(`dlBack:${UploadService.getFileUrl(`documents/${filename}`)}`);
+    }
+
+    // Aadhar - front and back
+    const aadharDocs: string[] = [];
+    if (files.aadharFront && files.aadharFront[0]) {
+      const filename = files.aadharFront[0].filename;
+      const aadharFrontUrl = UploadService.getFileUrl(`documents/${filename}`);
+      applicationData.documents.aadhar.url = aadharFrontUrl;
+      aadharDocs.push(`aadharFront:${aadharFrontUrl}`);
+    }
+    if (files.aadharBack && files.aadharBack[0]) {
+      const filename = files.aadharBack[0].filename;
+      aadharDocs.push(`aadharBack:${UploadService.getFileUrl(`documents/${filename}`)}`);
+    }
+
+    // RC documents - store in notes (DriverApplication model doesn't have RC field)
+    const rcDocs: string[] = [];
+    if (files.rcFront && files.rcFront[0]) {
+      const filename = files.rcFront[0].filename;
+      rcDocs.push(`rcFront:${UploadService.getFileUrl(`documents/${filename}`)}`);
+    }
+    if (files.rcBack && files.rcBack[0]) {
+      const filename = files.rcBack[0].filename;
+      rcDocs.push(`rcBack:${UploadService.getFileUrl(`documents/${filename}`)}`);
+    }
+
+    // Store all document URLs in notes
+    const allDocUrls = [...dlDocs, ...aadharDocs, ...rcDocs];
+    if (allDocUrls.length > 0) {
+      applicationData.notes = [
+        applicationData.notes,
+        ...allDocUrls,
+      ].filter(Boolean).join('; ');
+    }
+  }
+
+  const application = await DriverApplication.create(applicationData);
 
   res.status(201).json({
     status: 'success',

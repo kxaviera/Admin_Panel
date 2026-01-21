@@ -3,8 +3,8 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IDriverApplication extends Document {
   firstName: string;
   lastName: string;
-  email: string;
-  phone: string;
+  email?: string; // Optional - can be provided in profile info step
+  phone?: string; // Optional - can be provided in profile info step
   serviceCategory: 'ride' | 'parcel' | 'both';
   status: 'pending' | 'approved' | 'rejected';
   documents: {
@@ -67,8 +67,8 @@ const DriverApplicationSchema = new Schema<IDriverApplication>(
   {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    email: { type: String, required: true },
-    phone: { type: String, required: true },
+    email: { type: String, required: false }, // Optional - can be provided in profile info step
+    phone: { type: String, required: false }, // Optional - can be provided in profile info step
     serviceCategory: {
       type: String,
       enum: ['ride', 'parcel', 'both'],
